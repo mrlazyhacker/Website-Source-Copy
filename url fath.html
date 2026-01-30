@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>URL Fetcher | MR LAZY</title>
+<style>
+*{margin:0;padding:0;font-family:monospace}
+body{
+  background:#0b0f14;color:#0f0;
+  overflow:hidden;
+}
+.blur{
+  filter: blur(6px);
+}
+.container{
+  padding:40px;
+}
+input,button{
+  width:100%;padding:15px;margin:10px 0;
+  background:#000;border:1px solid #0f0;color:#0f0;
+}
+button:hover{background:#0f0;color:#000;cursor:pointer}
+.modal{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.8);
+  display:flex;align-items:center;justify-content:center;
+}
+.modal-box{
+  background:#000;padding:30px;border:1px solid #0f0;
+  width:320px;animation:pop .5s;
+}
+@keyframes pop{from{transform:scale(.7)}to{scale(1)}}
+.scroll-warning{
+  position:fixed;bottom:0;width:100%;
+  background:#000;color:red;
+  white-space:nowrap;overflow:hidden;
+}
+.scroll-warning span{
+  display:inline-block;padding-left:100%;
+  animation:scroll 15s linear infinite;
+}
+@keyframes scroll{to{transform:translateX(-100%)}}
+.contact{
+  margin-top:40px;border-top:1px solid #0f0;padding-top:20px;
+}
+</style>
+</head>
+
+<body>
+<div id="main" class="container blur">
+  <h1>URL SOURCE FETCHER</h1>
+  <p>Developer: <b>MR LAZY</b></p>
+
+  <input id="url" placeholder="Enter website URL">
+  <button onclick="fetchSource()">Fetch Source</button>
+
+  <div class="contact">
+    <h3>Contact Developer</h3>
+    <p>Email: mrlazy@proton.me</p>
+    <p>Telegram: @mrlazy_dev</p>
+  </div>
+</div>
+
+<div class="modal" id="keyModal">
+  <div class="modal-box">
+    <h3>ACTIVATE KEY</h3>
+    <input id="key" placeholder="Enter Key">
+    <button onclick="activate()">Activate</button>
+    <button onclick="location.href='keysite.php'">Get Key</button>
+  </div>
+</div>
+
+<div class="scroll-warning">
+  <span>⚠ WARNING: Unauthorized use is monitored | MR LAZY ⚠</span>
+</div>
+
+<script>
+let active=false;
+function activate(){
+  fetch('fetch.php?checkkey='+key.value)
+  .then(r=>r.text())
+  .then(t=>{
+    if(t==='OK'){
+      active=true;
+      keyModal.style.display='none';
+      main.classList.remove('blur');
+    }else alert('Invalid Key');
+  });
+}
+function fetchSource(){
+  if(!active){alert('Activate key first');return;}
+  location.href='fetch.php?url='+encodeURIComponent(url.value);
+}
+</script>
+</body>
+</html>
