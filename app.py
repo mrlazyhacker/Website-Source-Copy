@@ -1,0 +1,81 @@
+from flask import Flask, request, Response, render_template_string
+import requests
+from flask_cors import CORS
+
+app = Flask(__name__)
+CORS(app)
+
+# হোমপেজের জন্য এইচটিএমএল ডিজাইন (যা আগে দিয়েছিলাম)
+HTML_TEMPLATE = """
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TERMINAL - SOURCE BYPASS</title>
+    <style>
+        body { background-color: #000; color: #0f0; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .matrix-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(0deg, rgba(0, 50, 0, 0.2) 50%, rgba(0, 0, 0, 1) 100%); z-index: -1; }
+        .box { border: 1px solid #0f0; padding: 30px; background: rgba(0, 20, 0, 0.9); box-shadow: 0 0 15px #0f0; text-align: center; width: 85%; max-width: 500px; }
+        input { width: 100%; background: #000; border: 1px solid #0f0; color: #0f0; padding: 12px; margin: 20px 0; box-sizing: border-box; outline: none; }
+        button { background: #0f0; color: #000; border: none; padding: 10px 25px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 10px #0f0; }
+        #status { margin-top: 15px; font-size: 12px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+<div class="matrix-bg"></div>
+<div class="box">
+    <h2 style="letter-spacing: 5px;">[ DOWNLOADER ]</h2>
+    <input type="url" id="link" placeholder="ENTER TARGET URL..." required>
+    <button onclick="startBypass()">Execute</button>
+    <div id="status">> SYSTEM READY...</div>
+</div>
+<script>
+    async function startBypass() {
+        const url = document.getElementById('link').value;
+        const status = document.getElementById('status');
+        if(!url) return alert("লিঙ্ক দিন!");
+        status.innerText = "> INJECTING REQUEST...";
+        try {
+            const res = await fetch('/get-source', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: url})
+            });
+            if(res.ok) {
+                const blob = await res.blob();
+                const dUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = dUrl;
+                a.download = "extracted_source.html";
+                a.click();
+                status.innerText = "> SUCCESS: FILE SAVED";
+            } else { status.innerText = "> ERROR: BYPASS FAILED"; }
+        } catch(e) { status.innerText = "> SERVER OFFLINE"; }
+    }
+</script>
+</body>
+</html>
+"""
+
+@app.route('/')
+def home():
+    return render_template_string(HTML_TEMPLATE)
+
+@app.route('/get-source', methods=['POST'])
+def get_source():
+    data = request.json
+    target_url = data.get('url')
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0'}
+        response = requests.get(target_url, headers=headers, timeout=15)
+        return Response(
+            response.text,
+            mimetype="text/html",
+            headers={"Content-disposition": "attachment; filename=source.html"}
+        )
+    except Exception as e:
+        return {"error": str(e)}, 400
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
